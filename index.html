@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Resolution Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --accent3: #10b981;
+    --danger: #ef4444;
+    --text: #f0f0ff;
+    --muted: #8888aa;
+    --pixel: 2px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(124,58,237,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.06) 0%, transparent 50%);
+  }
+  code, .mono { font-family: 'Space Mono', monospace; }
+
+  /* PIXEL BORDERS */
+  .pixel-box {
+    border: var(--pixel) solid var(--border);
+    position: relative;
+  }
+  .pixel-box::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 1px solid rgba(124,58,237,0.2);
+    pointer-events: none;
+  }
+
+  /* AUTH SCREEN */
+  #auth-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    border: var(--pixel) solid var(--border);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .logo {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--accent2);
+    margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+  }
+  .auth-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+  }
+  .auth-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .tab-row {
+    display: flex;
+    border: var(--pixel) solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 0.6rem;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .field {
+    margin-bottom: 1rem;
+  }
+  .field label {
+    display: block;
+    font-size: 0.7rem;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .field input {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg);
+    border: var(--pixel) solid var(--border);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .btn-primary:hover { background: #6d28d9; }
+  .btn-primary:active { transform: translateY(1px); }
+  .error-msg {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* MAIN APP */
+  #app-screen { display: none; min-height: 100vh; }
+
+  /* TOP NAV */
+  .topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border-bottom: var(--pixel) solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.08em; }
+  .nav-user { display: flex; align-items: center; gap: 0.75rem; }
+  .nav-email { font-size: 0.75rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .btn-logout {
+    padding: 0.35rem 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* MAIN CONTENT */
+  .main-content { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: var(--pixel) solid var(--border);
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.c1::before { background: var(--accent); }
+  .stat-card.c2::before { background: var(--accent2); }
+  .stat-card.c3::before { background: var(--accent3); }
+  .stat-label { font-size: 0.65rem; font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
+  .stat-value { font-size: 2rem; font-weight: 800; line-height: 1; }
+  .stat-card.c1 .stat-value { color: var(--accent); }
+  .stat-card.c2 .stat-value { color: var(--accent2); }
+  .stat-card.c3 .stat-value { color: var(--accent3); }
+
+  /* SECTION HEADERS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-size: 0.7rem;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+  }
+
+  /* ADD RESOLUTION FORM */
+  .add-form {
+    background: var(--surface);
+    border: var(--pixel) solid var(--border);
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .add-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+  }
+  .add-row .field { margin: 0; flex: 1; }
+  .add-row .field input { padding: 0.65rem 0.75rem; }
+  .btn-add {
+    padding: 0.65rem 1.25rem;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    border: var(--pixel) solid transparent;
+  }
+  .btn-add:hover { background: #6d28d9; }
+
+  /* RESOLUTION CARDS */
+  .resolutions-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem; }
+  .res-card {
+    background: var(--surface);
+    border: var(--pixel) solid var(--border);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .res-card.done-today {
+    border-color: rgba(16,185,129,0.4);
+  }
+  .res-card.done-today::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent3);
+  }
+  .res-check {
+    width: 36px;
+    height: 36px;
+    border: var(--pixel) solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    color: var(--accent3);
+    font-size: 1.1rem;
+  }
+  .res-check:hover { border-color: var(--accent3); background: rgba(16,185,129,0.08); }
+  .res-check.checked { background: var(--accent3); border-color: var(--accent3); color: #fff; }
+  .res-info { flex: 1; min-width: 0; }
+  .res-title-text {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .res-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .streak-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.3);
+    color: #a78bfa;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .streak-fire { color: #fb923c; }
+  .last-done {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+  .res-actions { display: flex; gap: 0.5rem; }
+  .btn-icon {
+    width: 30px;
+    height: 30px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    transition: all 0.15s;
+  }
+  .btn-icon:hover { border-color: var(--danger); color: var(--danger); }
+  .btn-icon.edit:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--surface);
+    border: var(--pixel) dashed var(--border);
+  }
+  .empty-icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.4; }
+  .empty-text { color: var(--muted); font-size: 0.85rem; font-family: 'Space Mono', monospace; }
+
+  /* PROGRESS LOG */
+  .progress-section { margin-top: 0.5rem; }
+  .log-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+  .log-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    title: '';
+    cursor: default;
+    position: relative;
+  }
+  .log-dot.done { background: var(--accent3); border-color: var(--accent3); }
+  .log-month-label {
+    font-size: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: var(--pixel) solid var(--border);
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+  }
+  .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem; }
+  .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+  .btn-secondary {
+    flex: 1;
+    padding: 0.7rem;
+    background: transparent;
+    border: var(--pixel) solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
+  .btn-save {
+    flex: 1;
+    padding: 0.7rem;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-save:hover { background: #6d28d9; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--surface);
+    border: var(--pixel) solid var(--accent3);
+    color: var(--accent3);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    z-index: 300;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* YEAR HEATMAP */
+  .heatmap-wrap { overflow-x: auto; padding-bottom: 0.5rem; }
+
+  @media (max-width: 600px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .add-row { flex-direction: column; }
+    .add-row .btn-add { width: 100%; }
+    .res-card { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="logo">// Resolution Tracker</div>
+    <h1 class="auth-title">Level up<br>your 2026.</h1>
+    <p class="auth-sub">Track daily goals. Build streaks. Win the year.</p>
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+      <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <div id="auth-error" class="error-msg" style="display:none;"></div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="you@example.com" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="auth-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')authSubmit()" />
+    </div>
+    <div class="field" id="name-field" style="display:none;">
+      <label>Your Name</label>
+      <input type="text" id="auth-name" placeholder="e.g. Gorick" />
+    </div>
+    <button class="btn-primary" onclick="authSubmit()" id="auth-btn">LOGIN →</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen">
+  <nav class="topnav">
+    <div class="nav-logo">// 2026 Tracker</div>
+    <div class="nav-user">
+      <span class="nav-email" id="nav-email-display"></span>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+  <div class="main-content">
+
+    <!-- GREETING -->
+    <div style="margin-bottom:1.75rem;">
+      <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:0.25rem;" id="greeting-text">Welcome back.</h2>
+      <p style="font-size:0.8rem;color:var(--muted);font-family:'Space Mono',monospace;" id="date-display"></p>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card c1">
+        <div class="stat-label">Resolutions</div>
+        <div class="stat-value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card c2">
+        <div class="stat-label">Done Today</div>
+        <div class="stat-value" id="stat-today">0</div>
+      </div>
+      <div class="stat-card c3">
+        <div class="stat-label">Best Streak</div>
+        <div class="stat-value" id="stat-streak">0</div>
+      </div>
+    </div>
+
+    <!-- ADD RESOLUTION -->
+    <div class="section-header">
+      <div class="section-title">Add Resolution</div>
+    </div>
+    <div class="add-form">
+      <div class="add-row">
+        <div class="field">
+          <label>New Resolution</label>
+          <input type="text" id="new-res-input" placeholder='e.g. "Study 2 hours daily"' onkeydown="if(event.key==='Enter')addResolution()" maxlength="80"/>
+        </div>
+        <button class="btn-add" onclick="addResolution()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- RESOLUTIONS LIST -->
+    <div class="section-header">
+      <div class="section-title">My Resolutions</div>
+    </div>
+    <div class="resolutions-list" id="res-list"></div>
+
+    <!-- PROGRESS HEATMAP -->
+    <div class="progress-section" id="progress-section" style="display:none;">
+      <div class="section-header" style="margin-top:2rem;">
+        <div class="section-title">2026 Progress</div>
+      </div>
+      <div id="heatmap-container"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">Edit Resolution</div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="edit-input" maxlength="80" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveEdit()">Save →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STORAGE UTILS ────────────────────────────────────────────────
+const KEY_USERS = 'rt26_users';
+const KEY_SESSION = 'rt26_session';
+const KEY_RESOLUTIONS = 'rt26_resolutions';
+const KEY_LOGS = 'rt26_logs';
+
+function getUsers() { return JSON.parse(localStorage.getItem(KEY_USERS) || '{}'); }
+function saveUsers(u) { localStorage.setItem(KEY_USERS, JSON.stringify(u)); }
+function getSession() { return localStorage.getItem(KEY_SESSION); }
+function setSession(email) { localStorage.setItem(KEY_SESSION, email); }
+function clearSession() { localStorage.removeItem(KEY_SESSION); }
+
+function getResolutions(email) {
+  const all = JSON.parse(localStorage.getItem(KEY_RESOLUTIONS) || '{}');
+  return all[email] || [];
+}
+function saveResolutions(email, res) {
+  const all = JSON.parse(localStorage.getItem(KEY_RESOLUTIONS) || '{}');
+  all[email] = res;
+  localStorage.setItem(KEY_RESOLUTIONS, JSON.stringify(all));
+}
+function getLogs(email) {
+  const all = JSON.parse(localStorage.getItem(KEY_LOGS) || '{}');
+  return all[email] || {};
+}
+function saveLogs(email, logs) {
+  const all = JSON.parse(localStorage.getItem(KEY_LOGS) || '{}');
+  all[email] = logs;
+  localStorage.setItem(KEY_LOGS, JSON.stringify(all));
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────
+let currentTab = 'login';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='signup')));
+  document.getElementById('name-field').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('auth-btn').textContent = tab === 'login' ? 'LOGIN →' : 'CREATE ACCOUNT →';
+  clearError();
+}
+
+function showError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function clearError() {
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+function hashPass(p) {
+  let h = 0;
+  for (let i = 0; i < p.length; i++) { h = ((h << 5) - h) + p.charCodeAt(i); h |= 0; }
+  return h.toString(36);
+}
+
+function authSubmit() {
+  clearError();
+  const email = document.getElementById('auth-email').value.trim().toLowerCase();
+  const pass = document.getElementById('auth-pass').value;
+  if (!email || !pass) { showError('Please fill in all fields.'); return; }
+  if (!email.includes('@')) { showError('Invalid email address.'); return; }
+  if (pass.length < 6) { showError('Password must be at least 6 characters.'); return; }
+
+  const users = getUsers();
+  const hash = hashPass(pass);
+
+  if (currentTab === 'login') {
+    if (!users[email]) { showError('No account found. Please sign up.'); return; }
+    if (users[email].hash !== hash) { showError('Incorrect password.'); return; }
+    setSession(email);
+    loadApp(email, users[email].name);
+  } else {
+    const name = document.getElementById('auth-name').value.trim() || email.split('@')[0];
+    if (users[email]) { showError('Account already exists. Please login.'); return; }
+    users[email] = { hash, name };
+    saveUsers(users);
+    setSession(email);
+    loadApp(email, name);
+  }
+}
+
+function logout() {
+  clearSession();
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-pass').value = '';
+}
+
+// ─── APP ──────────────────────────────────────────────────────────
+let currentEmail = '';
+let editingId = null;
+
+function loadApp(email, name) {
+  currentEmail = email;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('nav-email-display').textContent = email;
+
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greeting-text').textContent = `${greet}, ${name}.`;
+
+  const now = new Date();
+  document.getElementById('date-display').textContent =
+    now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  renderAll();
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getStreak(resId) {
+  const logs = getLogs(currentEmail);
+  const resLogs = (logs[resId] || []).map(l => l.date).sort();
+  if (!resLogs.length) return 0;
+  let streak = 0;
+  let d = new Date();
+  while (true) {
+    const ds = d.toISOString().split('T')[0];
+    if (resLogs.includes(ds)) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else break;
+  }
+  return streak;
+}
+
+function isDoneToday(resId) {
+  const logs = getLogs(currentEmail);
+  return (logs[resId] || []).some(l => l.date === todayStr());
+}
+
+function markDone(resId) {
+  if (isDoneToday(resId)) return;
+  const logs = getLogs(currentEmail);
+  if (!logs[resId]) logs[resId] = [];
+  logs[resId].push({ date: todayStr(), ts: new Date().toISOString() });
+  saveLogs(currentEmail, logs);
+  showToast('Marked done! Keep it up!');
+  renderAll();
+}
+
+function renderAll() {
+  renderStats();
+  renderResolutions();
+  renderHeatmap();
+}
+
+function renderStats() {
+  const res = getResolutions(currentEmail);
+  const doneToday = res.filter(r => isDoneToday(r.id)).length;
+  const allStreaks = res.map(r => getStreak(r.id));
+  const bestStreak = allStreaks.length ? Math.max(...allStreaks) : 0;
+  document.getElementById('stat-total').textContent = res.length;
+  document.getElementById('stat-today').textContent = doneToday;
+  document.getElementById('stat-streak').textContent = bestStreak > 0 ? bestStreak + '🔥' : '0';
+}
+
+function renderResolutions() {
+  const res = getResolutions(currentEmail);
+  const list = document.getElementById('res-list');
+  if (!res.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">◻</div>
+      <div class="empty-text">No resolutions yet.<br>Add your first one above!</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = res.map(r => {
+    const done = isDoneToday(r.id);
+    const streak = getStreak(r.id);
+    const logs = getLogs(currentEmail);
+    const resLogs = logs[r.id] || [];
+    const lastLog = resLogs.length ? resLogs[resLogs.length - 1] : null;
+    const lastDate = lastLog ? new Date(lastLog.ts).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : 'never';
+    return `
+      <div class="res-card ${done ? 'done-today' : ''}">
+        <button class="res-check ${done ? 'checked' : ''}" onclick="${done ? '' : `markDone('${r.id}')`}" title="${done ? 'Done today!' : 'Mark as done'}">
+          ${done ? '✓' : '○'}
+        </button>
+        <div class="res-info">
+          <div class="res-title-text">${escHtml(r.title)}</div>
+          <div class="res-meta">
+            ${streak > 0 ? `<span class="streak-badge"><span class="streak-fire">🔥</span> ${streak} day streak</span>` : ''}
+            <span class="last-done">Last: ${lastDate}</span>
+          </div>
+        </div>
+        <div class="res-actions">
+          <button class="btn-icon edit" title="Edit" onclick="openEdit('${r.id}')">✎</button>
+          <button class="btn-icon" title="Delete" onclick="deleteRes('${r.id}')">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderHeatmap() {
+  const res = getResolutions(currentEmail);
+  const section = document.getElementById('progress-section');
+  if (!res.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  const logs = getLogs(currentEmail);
+  // Build set of all dates done (any resolution)
+  const allDates = new Set();
+  Object.values(logs).forEach(arr => arr.forEach(l => allDates.add(l.date)));
+
+  const container = document.getElementById('heatmap-container');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let html = '<div class="heatmap-wrap"><div style="display:flex;gap:1rem;flex-wrap:wrap;">';
+  for (let m = 0; m < 12; m++) {
+    const daysInMonth = new Date(2026, m+1, 0).getDate();
+    html += `<div>
+      <div class="log-month-label">${months[m]}</div>
+      <div class="log-grid">`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `2026-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const done = allDates.has(ds);
+      html += `<div class="log-dot${done?' done':''}" title="${ds}"></div>`;
+    }
+    html += '</div></div>';
+  }
+  html += '</div></div>';
+  container.innerHTML = html;
+}
+
+// ─── CRUD ─────────────────────────────────────────────────────────
+function addResolution() {
+  const input = document.getElementById('new-res-input');
+  const title = input.value.trim();
+  if (!title) return;
+  const res = getResolutions(currentEmail);
+  res.push({ id: 'r' + Date.now(), title, createdAt: new Date().toISOString() });
+  saveResolutions(currentEmail, res);
+  input.value = '';
+  showToast('Resolution added!');
+  renderAll();
+}
+
+function deleteRes(id) {
+  if (!confirm('Delete this resolution? All progress will be lost.')) return;
+  const res = getResolutions(currentEmail).filter(r => r.id !== id);
+  saveResolutions(currentEmail, res);
+  // Remove logs
+  const logs = getLogs(currentEmail);
+  delete logs[id];
+  saveLogs(currentEmail, logs);
+  showToast('Resolution deleted.');
+  renderAll();
+}
+
+function openEdit(id) {
+  editingId = id;
+  const res = getResolutions(currentEmail).find(r => r.id === id);
+  document.getElementById('edit-input').value = res.title;
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingId = null;
+}
+function saveEdit() {
+  const val = document.getElementById('edit-input').value.trim();
+  if (!val) return;
+  const res = getResolutions(currentEmail);
+  const idx = res.findIndex(r => r.id === editingId);
+  if (idx > -1) res[idx].title = val;
+  saveResolutions(currentEmail, res);
+  closeModal();
+  showToast('Updated!');
+  renderAll();
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────
+const session = getSession();
+if (session) {
+  const users = getUsers();
+  if (users[session]) loadApp(session, users[session].name);
+}
+</script>
+</body>
+</html>
