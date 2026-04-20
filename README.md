@@ -57,7 +57,7 @@ Just open `index.html` in any browser — no server, no setup needed.
 
 ## 👤 Author
 
-**Gorick** — BSc Computing Science student @ Griffith College Dublin  
+**Gorick** — BSc Computing Science @ Griffith College Dublin  
+🔗 [github.com/gorickroot](https://github.com/gorickroot)  
 Building toward a career in AI/ML 🤖
-
 > This project is part of my developer portfolio. Feel free to fork and build on it!
