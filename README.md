@@ -55,9 +55,20 @@ Just open `index.html` in any browser — no server, no setup needed.
 
 ---
 
-## 👤 Author
+## 👨‍💻 Author
 
-**Gorick** — BSc Computing Science @ Griffith College Dublin  
-🔗 [github.com/gorickroot](https://github.com/gorickroot)  
-Building toward a career in AI/ML 🤖
+**Gorick Nath**
+BSc Computing Science — Griffith College Dublin,Ireland 🇮🇪.
+
+Building AI agents & automations 🤖
+
+Founding ZynthoAI
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gorick-nath-aigeek)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/gorickroot)
+
+---
+
+> *"Every line of code is a step forward."*
+
 > This project is part of my developer portfolio. Feel free to fork and build on it!
